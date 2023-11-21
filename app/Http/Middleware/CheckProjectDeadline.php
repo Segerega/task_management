@@ -16,18 +16,18 @@ class CheckProjectDeadline
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $projectId = $request->route('project') ?? $request->route('project_id');
+        $projectId = $request->route('projectId');
 
         if ($projectId) {
             $project = Project::find($projectId);
 
             if ($project && $project->deadline && now()->greaterThan($project->deadline)) {
-                if ($project->status !== Project::STATUS_COMPLETED) {
+                if ($project->status == Project::STATUS_COMPLETED) {
+                    return response()->json(['message' => 'Project deadline has passed. Modifications are not allowed.'], 403);
+                } else {
                     $project->status = Project::STATUS_COMPLETED;
                     $project->save();
                 }
-
-                return response()->json(['message' => 'Project deadline has passed. Modifications are not allowed.'], 403);
             }
         }
 
